@@ -1,22 +1,25 @@
-# vcegen
-
-**Command-line tool and library for generating VCE-ready files from PDFs.**
+<div align="center">
+<h1>vcegen</h1>
+<b>Python library for generating VCE-ready files from PDFs.</b>
+</div>
 
 ## Usage
 
 There are two ways you can use vcegen.
 
-1. Through the commandline:
+1. Through the **command-line**:
 
 ```sh
 python vcegen.py -i exam.pdf -s <strategy>
 ```
 
-2. Through a Python script:
+2. Through a **Python script**:
 
 ```python
 from vcegen.strategies import PyMuPDFStrategy, StandardStrategy, TripleColumnStrategy
 ```
+
+For scripting, you can read the [API reference](#api-reference) below.
 
 ### Example Script
 
@@ -194,3 +197,83 @@ Example:
 |                |         |            |
 +----------------+---------+------------+
 ```
+
+# API Reference
+
+## `StandardStrategy`
+
+```python
+from vcegen.strategies import StandardStrategy
+
+strategy = StandardStrategy()
+```
+
+**Arguments:**
+* `input_file` (string): accepts a path to a PDF file.
+* `boxed_choices` (boolean): if `True`, the parser will run with the assumption that choice labels are in separate columns.
+* `blacklist` (list[string]): a list of words or strings - if the parser detects these strings inside a row, it will ignore the row.
+* `debug`: run in **debug mode** - the parser will run in a verbose manner.
+
+**Returns:**
+* `StandardStrategy` - instance of `StandardStrategy`
+
+### Methods
+
+* `run()`: runs the parser (returns: `None`)
+* `get_results()`: returns the parser's output/results (returns: `list[str]`)
+  * `print_results` (boolean, `default=True`): if `True`, the results will be printed in the console.
+* `export()`: generates a TXT file that can be passed to [ExamFormatter](https://www.examcollection.com/examformatter.html) to generate a VCE file.
+* `validate()`: validates the results returned by the parser
+  * `min_choices` (int, `default=3`): minimum number of choices that a valid exam row should have.
+  * `auto_filter` (boolean, `default=True`): if `True`, detected invalid entries/rows will be omitted from the parser's results.
+
+## `PyMuPDFStrategy`
+
+```python
+from vcegen.strategies import PyMuPDFStrategy
+
+strategy = PyMuPDFStrategy()
+```
+
+**Arguments:**
+* `input_file` (string): accepts a path to a PDF file.
+* `boxed_choices` (boolean): if `True`, the parser will run with the assumption that choice labels are in separate columns.
+* `blacklist` (list[string]): a list of words or strings - if the parser detects these strings inside a row, it will ignore the row.
+* `debug`: run in **debug mode** - the parser will run in a verbose manner.
+
+**Returns:**
+* `PyMuPDFStrategy` - instance of `PyMuPDFStrategy`
+
+### Methods
+
+* `run()`: runs the parser (returns: `None`)
+* `get_results()`: returns the parser's output/results (returns: `list[str]`)
+  * `print_results` (boolean): if `True`, the results will be printed in the console.
+* `export()`: generates a TXT file that can be passed to [ExamFormatter](https://www.examcollection.com/examformatter.html) to generate a VCE file.
+
+## `TripleColumnStrategy`
+
+```python
+from vcegen.strategies import TripleColumnStrategy
+
+strategy = TripleColumnStrategy()
+```
+
+**Arguments:**
+* `input_file` (string): accepts a path to a PDF file.
+* `boxed_choices` (boolean): if `True`, the parser will run with the assumption that choice labels are in separate columns.
+* `blacklist` (list[string]): a list of words or strings - if the parser detects these strings inside a row, it will ignore the row.
+* `debug`: run in **debug mode** - the parser will run in a verbose manner.
+
+**Returns:**
+* `TripleColumnStrategy` - instance of `TripleColumnStrategy`
+
+### Methods
+
+* `run()`: runs the parser (returns: `None`)
+* `get_results()`: returns the parser's output/results (returns: `list[str]`)
+  * `print_results` (boolean): if `True`, the results will be printed in the console.
+* `export()`: generates a TXT file that can be passed to [ExamFormatter](https://www.examcollection.com/examformatter.html) to generate a VCE file.
+* `validate()`: validates the results returned by the parser
+  * `min_choices` (int, `default=3`): minimum number of choices that a valid exam row should have.
+  * `auto_filter` (boolean, `default=True`): if `True`, detected invalid entries/rows will be omitted from the parser's results.
