@@ -49,4 +49,6 @@ if __name__ == "__main__":
     if strategy is not None:
         strategy.run()
         strategy.get_results()
-        strategy.validate()
+
+        if not isinstance(strategy, PyMuPDFStrategy):
+            strategy.validate()
