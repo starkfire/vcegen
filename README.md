@@ -5,10 +5,30 @@
 
 ## Installation
 
+Clone the repository:
+
 ```sh
 git clone https://github.com/starkfire/vcegen.git
 cd vcegen
-pip install -r requirements.txt
+```
+
+It is also recommended that you set up a virtual environment for installing the dependencies, but you can freely skip this step:
+
+```sh
+# setup a virtual environment with virtualenv
+virtualenv .venv
+
+# activate virtual environment (on Windows)
+.venv\Scripts\activate
+
+# activate virtual environment (on Linux)
+.venv/bin/activate
+```
+
+You can then install the required dependencies and set up the library:
+
+```sh
+pip install .
 ```
 
 ## Usage
