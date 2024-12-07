@@ -49,6 +49,20 @@ from vcegen.strategies import PyMuPDFStrategy, StandardStrategy, TripleColumnStr
 
 For scripting, you can read the [API reference](#api-reference) below.
 
+### Command Syntax
+
+```sh
+python vcegen.py -i <path_to_input_pdf_file> -s <strategy> [--boxedchoices | --export]
+```
+
+**Required Arguments:**
+* `-i`: should contain the path to an input PDF file
+* `-s`: the parsing strategy to use (options: `standard`, `triplecolumn`, `pymupdf`)
+
+**Optional Arguments:**
+* `--boxedchoices`: tells vcegen that your PDF file consists of boxed choice labels. This option is only considered if the selected strategy is `standard`.
+* `--export`: exports the output to a VCE-ready TXT file. The TXT files can be passed to [Exam Formatter](https://www.examcollection.com/examformatter.html) for conversion.
+
 ### Example Script
 
 If you want to use vcegen inside your own Python script, here is a quick example:
@@ -73,6 +87,20 @@ The CLI already automates this procedure for you. The above script is equivalent
 
 ```sh
 python vcegen.py -i my_exam.pdf -s standard
+```
+
+### Demo Directory
+
+This repository includes a `/demo` directory which includes test files and an example script that you can freely change.
+
+You can also use the test files to try the CLI:
+
+```sh
+# demo/test1.pdf is suited for the pymupdf strategy
+python vcegen.py -i demo/test1.pdf -s pymupdf
+
+# demo/test2.pdf is suited for the standard strategy with --boxedchoices
+python vcegen.py -i demo/test2.pdf -s standard --boxedchoices
 ```
 
 ## Strategies
