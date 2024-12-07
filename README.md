@@ -3,6 +3,14 @@
 <b>Python library for generating VCE-ready files from PDFs.</b>
 </div>
 
+## Installation
+
+```sh
+git clone https://github.com/starkfire/vcegen.git
+cd vcegen
+pip install -r requirements.txt
+```
+
 ## Usage
 
 There are two ways you can use vcegen.
