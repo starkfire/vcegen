@@ -22,7 +22,14 @@ if __name__ == "__main__":
     parser.add_argument("--boxedchoices", 
                         '-b', 
                         help="Tell the parser that the input file uses boxed choices", 
-                        action=argparse.BooleanOptionalAction, default=False
+                        action=argparse.BooleanOptionalAction, 
+                        default=False
+    )
+    parser.add_argument("--export",
+                        '-e',
+                        help="Exports the parser's output to a VCE-ready TXT file",
+                        action=argparse.BooleanOptionalAction,
+                        default=False
     )
 
     args = parser.parse_args()
@@ -52,3 +59,6 @@ if __name__ == "__main__":
 
         if not isinstance(strategy, PyMuPDFStrategy):
             strategy.validate()
+
+        if args.export:
+            strategy.export()
