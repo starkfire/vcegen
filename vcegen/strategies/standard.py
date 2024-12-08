@@ -227,7 +227,7 @@ class StandardStrategy:
 
 
     def export(self, output_name=None):
-        output_file_name = "output.txt"
+        output_file_name = output_name
 
         if self.result is None or len(self.result) == 0:
             print("No questions found.")
