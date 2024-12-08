@@ -133,10 +133,19 @@ class StandardStrategy:
         return entry
 
     
-    def __run_strategy(self, pdf: pdfplumber.pdf.PDF):
+    def __run_strategy(self, pdf: pdfplumber.pdf.PDF, start_page: int | None = None, end_page: int | None = None):
         rows = []
 
-        for page in pdf.pages:
+        for page_index, page in enumerate(pdf.pages):
+            if start_page is not None and end_page is not None and end_page >= start_page:
+                current_page_number = page_index + 1
+
+                if current_page_number < start_page:
+                    continue
+
+                if current_page_number > end_page:
+                    break
+
             tables = page.extract_tables()
 
             for table in tables:
@@ -201,9 +210,9 @@ class StandardStrategy:
                 print(json.dumps(entry, indent=2))
 
 
-    def run(self):
+    def run(self, start_page: int | None = None, end_page: int | None = None):
         with pdfplumber.open(self.input_file) as pdf:
-            self.__run_strategy(pdf)
+            self.__run_strategy(pdf, start_page, end_page)
 
     
     def get_results(self, print_results=True):
