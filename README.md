@@ -79,7 +79,7 @@ strategy.run()
 # print results
 strategy.get_results()
 
-# validate the output (this will remove parsed entries that are semantically invalid)
+# validate the output (this will remove parsed entries that are syntactically invalid)
 strategy.validate()
 ```
 
@@ -275,7 +275,9 @@ strategy = StandardStrategy()
 
 ### Methods
 
-* `run()`: runs the parser (returns: `None`)
+* `run(start_page: int | None = None, end_page: int | None = None)`: runs the parser (returns: `None`)
+    * `start_page` (`int | None`, default: `None`): starting page number that the parser should process
+    * `end_page` (`int | None`, default: `None`): ending page number where the parser should stop processing
 * `get_results()`: returns the parser's output/results (returns: `list[str]`)
   * `print_results` (boolean, `default=True`): if `True`, the results will be printed in the console.
 * `export()`: generates a TXT file that can be passed to [ExamFormatter](https://www.examcollection.com/examformatter.html) to generate a VCE file.
