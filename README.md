@@ -192,7 +192,7 @@ strategy = StandardStrategy("test.pdf", boxed_choices=True)
 
 If you are using vcegen through the commandline, you have to include the `--boxedchoices` option:
 
-```python
+```sh
 python vcegen.py -i test.pdf -s standard --boxedchoices
 ```
 
@@ -252,6 +252,16 @@ Example:
 |    d. D        |         | ...        |
 |                |         |            |
 +----------------+---------+------------+
+```
+
+## Usage Tips
+
+### Excluding Rationale from Exported Files
+
+To exclude rationale entries to output TXT files, you can pass an `--exclude-rationale` option. This is supported in all strategies. For example:
+
+```sh
+python vcegen.py -i exam.pdf -s standard --exclude-rationale
 ```
 
 # API Reference

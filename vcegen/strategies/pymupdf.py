@@ -5,9 +5,10 @@ import os
 
 class PyMuPDFStrategy:
 
-    def __init__(self, input_file, debug=False):
+    def __init__(self, input_file, exclude_rationale=False, debug=False):
         self.input_file = input_file
         self.document: pymupdf.Document = self.__create_document(input_file)
+        self.exclude_rationale = exclude_rationale
         self.debug = debug
         self.result: list[dict] | None = None
 
@@ -164,13 +165,15 @@ class PyMuPDFStrategy:
                 file.write(f"{choice}\n")
 
             file.write(f"\nAnswer: {row['answer']}\n\n")
-            file.write(f"Rationale:\n")
 
-            for idx, choice in enumerate(row["choices"]):
-                if idx < len(row["rationale"]):
-                    file.write(f"{choice}: {row['rationale'][idx]}\n")
-                else:
-                    file.write(f"{choice}: No associated ationale for choice\n")
+            if not self.exclude_rationale:
+                file.write(f"Rationale:\n")
+
+                for idx, choice in enumerate(row["choices"]):
+                    if idx < len(row["rationale"]):
+                        file.write(f"{choice}: {row['rationale'][idx]}\n")
+                    else:
+                        file.write(f"{choice}: No associated rationale for choice\n")
 
             file.write("\n")
 

@@ -31,6 +31,10 @@ if __name__ == "__main__":
                         action=argparse.BooleanOptionalAction,
                         default=False
     )
+    parser.add_argument("--exclude-rationale",
+                        help="Exclude the rationale entries",
+                        action=argparse.BooleanOptionalAction,
+                        default=False)
 
     args = parser.parse_args()
 
@@ -45,13 +49,15 @@ if __name__ == "__main__":
     strategy: StandardStrategy | PyMuPDFStrategy | TripleColumnStrategy | None = None
 
     if args.strategy == "triplecolumn":
-        strategy = TripleColumnStrategy(args.input)
+        strategy = TripleColumnStrategy(args.input, exclude_rationale=args.exclude_rationale)
 
     if args.strategy == "standard":
-        strategy = StandardStrategy(args.input, boxed_choices=args.boxedchoices)
+        strategy = StandardStrategy(args.input, 
+                                    boxed_choices=args.boxedchoices,
+                                    exclude_rationale=args.exclude_rationale)
 
     if args.strategy == "pymupdf":
-        strategy = PyMuPDFStrategy(args.input)
+        strategy = PyMuPDFStrategy(args.input, exclude_rationale=args.exclude_rationale)
 
     if strategy is not None:
         strategy.run()
