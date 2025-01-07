@@ -1,15 +1,15 @@
-from fastapi import FastAPI, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, BackgroundTasks, Form, File, UploadFile
+from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from vcegen.strategies import StandardStrategy, PyMuPDFStrategy, TripleColumnStrategy
+from io import BytesIO
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     background_tasks = BackgroundTasks()
-    # background_tasks.add_task(some_loading_function)
     await background_tasks()
     yield
-    # call unloading/unmounting functions here
 
 app = FastAPI(lifespan=lifespan)
 
@@ -23,6 +23,61 @@ app.add_middleware(
         allow_headers=["*"]
 )
 
+
 @app.get("/")
 async def root():
     return { "message": "Hello!" }
+
+
+@app.post("/analyze")
+async def analyze(file: UploadFile = File(...),
+                  strategy: str = Form(...),
+                  exclude_rationale: bool = Form(default=False),
+                  boxed_choices: bool = Form(default=False),
+                  export: bool = Form(default=False)):
+
+    VALID_MIMETYPES = [
+        "application/pdf"
+    ]
+
+    if file.content_type not in VALID_MIMETYPES:
+        raise HTTPException(status_code=400, detail="Invalid File Type")
+
+    # read file
+    file_data = await file.read()
+
+    # reset reader pointer
+    file.file.seek(0)
+
+    # convert to a BytesIO object
+    file_bytes = BytesIO(file_data)
+
+    parser: StandardStrategy | PyMuPDFStrategy | TripleColumnStrategy | None = None
+    
+    if strategy == "triplecolumn":
+        parser = TripleColumnStrategy(file, exclude_rationale=exclude_rationale)
+
+    if strategy == "standard":
+        parser = StandardStrategy(file_bytes, 
+                                  boxed_choices=boxed_choices,
+                                  exclude_rationale=exclude_rationale)
+
+    if strategy == "pymupdf":
+        parser = PyMuPDFStrategy(file, exclude_rationale=exclude_rationale)
+
+    if parser is None:
+        raise HTTPException(status_code=500, detail="Cannot determine parser for input strategy")
+
+    parser.run()
+    results = parser.get_results()
+
+    if not isinstance(parser, PyMuPDFStrategy):
+        parser.validate()
+
+    if export:
+        parser.export()
+
+    return { 
+        "results": results 
+    }
+
