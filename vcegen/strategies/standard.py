@@ -2,11 +2,12 @@ import pdfplumber
 import re
 import json
 import os
+from io import BytesIO
 
 class StandardStrategy:
 
     def __init__(self, 
-                    input_file, 
+                    input_file: str | BytesIO, 
                     boxed_choices = False,
                     merged_rationales = False,
                     exclude_rationale = False,
