@@ -1,4 +1,5 @@
 import pdfplumber
+import wordninja
 import re
 import json
 import os
@@ -6,13 +7,14 @@ from io import BytesIO
 
 class StandardStrategy:
 
-    def __init__(self, 
-                    input_file: str | BytesIO, 
-                    boxed_choices = False,
-                    merged_rationales = False,
-                    exclude_rationale = False,
-                    blacklist: list[str] = [], 
-                    debug=False
+    def __init__(self,
+                 input_file: str | BytesIO,
+                 boxed_choices = False,
+                 merged_rationales = False,
+                 exclude_rationale = False,
+                 apply_corrections = False,
+                 blacklist: list[str] = [],
+                 debug = False
         ):
         self.input_file = input_file
         self.debug = debug
@@ -21,6 +23,7 @@ class StandardStrategy:
         self.boxed_choices = boxed_choices
         self.merged_rationales = merged_rationales
         self.exclude_rationale = exclude_rationale
+        self.apply_corrections = apply_corrections
 
 
     def set_blacklist(self, words: list[str] = []):
@@ -81,6 +84,10 @@ class StandardStrategy:
 
             if entry["question_number"] is not None and entry["question_text"] is None:
                 entry["question_text"] = cell.replace(f"{entry['question_number']}.", "").strip()
+
+                if self.apply_corrections:
+                    entry["question_text"] = entry["question_text"].replace(" ", "")
+                    entry["question_text"] = " ".join(wordninja.split(entry["question_text"]))
 
             if self.boxed_choices:
                 if len(cell) <= 2 and entry["answer"] is None:

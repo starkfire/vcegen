@@ -2,22 +2,25 @@ import pdfplumber
 import re
 import json
 import os
+import wordninja
 
 class TripleColumnStrategy:
 
-    def __init__(self, 
-                    input_file, 
-                    boxed_choices = False,
-                    merged_rationales = False,
-                    exclude_rationale = False,
-                    blacklist: list[str] = [], 
-                    debug=False
+    def __init__(self,
+                 input_file,
+                 boxed_choices = False,
+                 apply_corrections = False,
+                 merged_rationales = False,
+                 exclude_rationale = False,
+                 blacklist: list[str] = [],
+                 debug = False,
         ):
         self.input_file = input_file
         self.debug = debug
         self.result: list[dict] | None = None
         self.blacklist: list[str] = blacklist
         self.boxed_choices = boxed_choices
+        self.apply_corrections = apply_corrections
         self.merged_rationales = merged_rationales
         self.exclude_rationale = exclude_rationale
 
@@ -82,6 +85,10 @@ class TripleColumnStrategy:
                 if len(row) >= 2:
                     entry["answer"] = row[1]
 
+                if self.apply_corrections:
+                    entry["question_text"] = entry["question_text"].replace(" ", "")
+                    entry["question_text"] = " ".join(wordninja.split(entry["question_text"]))
+
                 for word in self.blacklist:
                     if word in entry["question_text"] or word in entry["choices"]:
                         return None
@@ -103,6 +110,10 @@ class TripleColumnStrategy:
                 entry["choices"] = [choice.strip() for choice in choices if choice.strip()]
             else:
                 entry["question_text"] = rest
+
+            if self.apply_corrections:
+                entry["question_text"] = entry["question_text"].replace(" ", "")
+                entry["question_text"] = " ".join(wordninja.split(entry["question_text"]))
 
             if len(row) >= 2:
                 entry["answer"] = row[1]

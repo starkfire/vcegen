@@ -1,14 +1,20 @@
 import pymupdf
+import wordninja
 import pandas as pd
 import json
 import os
 
 class PyMuPDFStrategy:
 
-    def __init__(self, input_file, exclude_rationale=False, debug=False):
+    def __init__(self, 
+                 input_file, 
+                 exclude_rationale=False, 
+                 apply_corrections=False,
+                 debug=False):
         self.input_file = input_file
         self.document: pymupdf.Document = self.__create_document(input_file)
         self.exclude_rationale = exclude_rationale
+        self.apply_corrections = apply_corrections
         self.debug = debug
         self.result: list[dict] | None = None
 
@@ -52,6 +58,10 @@ class PyMuPDFStrategy:
             # it must be a question
             if type(q) is str and q.isdigit():
                 question = self.__sanitize_text(question_text[idx])
+
+                if question and len(question) > 0:
+                    question = question.replace(" ", "")
+                    question = " ".join(wordninja.split(question))
 
                 rows.append({
                     "question_number": q,
