@@ -52,7 +52,7 @@ For scripting, you can read the [API reference](#api-reference) below.
 ### Command Syntax
 
 ```sh
-python vcegen.py -i <path_to_input_pdf_file> -s <strategy> [--boxedchoices | --export]
+python vcegen.py -i <path_to_input_pdf_file> -s <strategy> [--boxedchoices | --export | --apply-corrections]
 ```
 
 **Required Arguments:**
@@ -62,6 +62,7 @@ python vcegen.py -i <path_to_input_pdf_file> -s <strategy> [--boxedchoices | --e
 **Optional Arguments:**
 * `--boxedchoices`: tells vcegen that your PDF file consists of boxed choice labels. This option is only considered if the selected strategy is `standard`.
 * `--export`: exports the output to a VCE-ready TXT file. The TXT files can be passed to [Exam Formatter](https://www.examcollection.com/examformatter.html) for conversion.
+* `--apply-corrections`: applies sentence correction with [wordninja](https://github.com/keredson/wordninja)
 
 ### Example Script
 
