@@ -19,6 +19,7 @@ class StandardStrategy:
         self.input_file = input_file
         self.debug = debug
         self.result: list[dict] | None = None
+        self.invalid: list[dict] | None = None
         self.blacklist: list[str] = blacklist
         self.boxed_choices = boxed_choices
         self.merged_rationales = merged_rationales
@@ -218,6 +219,8 @@ class StandardStrategy:
             print("The following invalid rows were trimmed out of the results:")
             for entry in invalid:
                 print(json.dumps(entry, indent=2))
+
+        self.invalid = invalid
 
 
     def run(self, start_page: int | None = None, end_page: int | None = None):

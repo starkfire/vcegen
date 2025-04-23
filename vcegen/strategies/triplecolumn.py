@@ -18,6 +18,7 @@ class TripleColumnStrategy:
         self.input_file = input_file
         self.debug = debug
         self.result: list[dict] | None = None
+        self.invalid: list[dict] | None = None
         self.blacklist: list[str] = blacklist
         self.boxed_choices = boxed_choices
         self.apply_corrections = apply_corrections
@@ -226,6 +227,8 @@ class TripleColumnStrategy:
             print("The following invalid rows were trimmed out of the results:")
             for entry in invalid:
                 print(json.dumps(entry, indent=2))
+
+        self.invalid = invalid
 
 
     def run(self):
