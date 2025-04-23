@@ -33,7 +33,7 @@ pip install .
 
 ## Usage
 
-There are two ways you can use vcegen.
+There are three ways you can use vcegen.
 
 1. Through the **command-line**:
 
@@ -48,6 +48,14 @@ from vcegen.strategies import PyMuPDFStrategy, StandardStrategy, TripleColumnStr
 ```
 
 For scripting, you can read the [API reference](#api-reference) below.
+
+3. As a **RESTful API**:
+
+You can also run vcegen as a RESTful API using FastAPI:
+
+```sh
+uvicorn vcegen.restapi:app
+```
 
 ### Command Syntax
 
