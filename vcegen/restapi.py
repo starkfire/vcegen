@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from vcegen.strategies import StandardStrategy, PyMuPDFStrategy, TripleColumnStrategy
 from io import BytesIO
 import asyncio
+import os
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,7 +15,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = ["http://localhost", "http://localhost:1420", "http://localhost:5173", "http://localhost:8080"]
+origins = [os.getenv("HOST_CLIENT")] if "HOST_CLIENT" in os.environ else [
+    "http://localhost", 
+    "http://localhost:1420", 
+    "http://localhost:5173", 
+    "http://localhost:8080"
+]
 
 app.add_middleware(
         CORSMiddleware,
