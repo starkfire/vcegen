@@ -1,0 +1,50 @@
+{
+  "name": "vcegen",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/vcegen/vcegen",
+  "tags": [
+    "type:app",
+    "scope:backend",
+    "lang:python"
+  ],
+  "targets": {
+    "venv": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../tools/scripts/create-venv.mjs",
+        "cwd": "apps/vcegen"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "venv"
+      ],
+      "options": {
+        "commands": [
+          "node ../../tools/scripts/pip-install-requirements.mjs requirements.txt",
+          "node ../../tools/scripts/venv-python.mjs -m pip install --no-deps -e ."
+        ],
+        "parallel": false,
+        "cwd": "apps/vcegen"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "node ../../tools/scripts/venv-python.mjs -m uvicorn vcegen.restapi:app --reload --port 8000",
+        "cwd": "apps/vcegen"
+      }
+    },
+    "cli": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../tools/scripts/venv-python.mjs vcegen.py",
+        "cwd": "apps/vcegen",
+        "forwardAllArgs": true
+      }
+    }
+  }
+}

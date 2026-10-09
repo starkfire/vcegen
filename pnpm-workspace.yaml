@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+
+onlyBuiltDependencies:
+  - "@tailwindcss/oxide"
+  - "esbuild"
+  - "nx"
+  - "@parcel/watcher"

@@ -1,0 +1,6 @@
+reference/
+dist/
+node_modules/
+apps/vcegen/
+apps/vcegen-app/src-tauri/
+pnpm-lock.yaml

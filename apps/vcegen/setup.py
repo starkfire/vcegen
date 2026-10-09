@@ -11,7 +11,7 @@ setup(
     name="vcegen",
     version="0.1.0",
     description="Python library for generating VCE-ready files from PDFs",
-    url="https://github.com/starkfire/vcegen",
+    url="https://github.com/starkfire/vcegen-next",
     packages=find_packages(exclude=['demo', 'docs', 'tests']),
     install_requires=requirements
 )

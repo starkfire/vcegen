@@ -1,0 +1,32 @@
+{
+  "name": "vcegen-app",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/vcegen-app/src",
+  "tags": ["type:app", "scope:frontend"],
+  "targets": {
+    "tauri": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm tauri",
+        "cwd": "apps/vcegen-app"
+      }
+    },
+    "tauri-dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "pnpm tauri dev",
+        "cwd": "apps/vcegen-app"
+      }
+    },
+    "tauri-build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "pnpm tauri build --config \"{\\\"build\\\":{\\\"beforeBuildCommand\\\":\\\"\\\"}}\"",
+        "cwd": "apps/vcegen-app"
+      }
+    }
+  }
+}
