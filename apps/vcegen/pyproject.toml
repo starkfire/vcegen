@@ -27,3 +27,6 @@ required-version = ">=0.9"
 [tool.uv.build-backend]
 module-name = "vcegen"
 module-root = ""
+
+[dependency-groups]
+dev = []
