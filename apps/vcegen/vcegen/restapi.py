@@ -10,6 +10,7 @@ import os
 import logging
 from typing import Literal
 
+logger = logging.getLogger("uvicorn.error")
 app = FastAPI()
 
 # CORS
@@ -123,7 +124,9 @@ async def analyze(file: UploadFile = File(...),
                                        exclude_rationale,
                                        boxed_choices)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An unknown error occurred")
+        logger.exception("Failed to parse %r using the '%s' strategy", file.filename, strategy)
+        raise HTTPException(status_code=500,
+                            detail=f"The '{strategy}' could not parse the input PDF ({type(e).__name__})")
     finally:
         await file.close()
 

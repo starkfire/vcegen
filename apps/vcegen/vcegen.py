@@ -1,28 +1,31 @@
 import argparse
 from vcegen.strategies import StandardStrategy, PyMuPDFStrategy, TripleColumnStrategy
+from vcegen.modules.logger import configure_logging
 
 if __name__ == "__main__":
+    configure_logging()
+
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--strategy", 
-                        '-s', 
+    parser.add_argument("--strategy",
+                        '-s',
                         help="Parsing Strategy to use (`pymupdf` | `standard` | `triplecolumn` | `boxedchoices`) (default: `standard`)",
                         default="standard"
     )
-    parser.add_argument("--input", 
-                        '-i', 
+    parser.add_argument("--input",
+                        '-i',
                         help="Path to input PDF file"
     )
-    parser.add_argument("--debug", 
-                        '-d', 
-                        help="Run in Debug Mode", 
-                        action=argparse.BooleanOptionalAction, 
+    parser.add_argument("--debug",
+                        '-d',
+                        help="Run in Debug Mode",
+                        action=argparse.BooleanOptionalAction,
                         default=False
     )
-    parser.add_argument("--boxedchoices", 
-                        '-b', 
-                        help="Tell the parser that the input file uses boxed choices", 
-                        action=argparse.BooleanOptionalAction, 
+    parser.add_argument("--boxedchoices",
+                        '-b',
+                        help="Tell the parser that the input file uses boxed choices",
+                        action=argparse.BooleanOptionalAction,
                         default=False
     )
     parser.add_argument("--export",
@@ -46,7 +49,7 @@ if __name__ == "__main__":
     if not args.input:
         print("Please provide an input PDF file")
         raise SystemExit(1)
-    
+
     if args.strategy not in ["triplecolumn", "standard", "pymupdf"]:
         print("Please provide a valid strategy. Strategies include `triplecolumn`, `standard`, and `pymupdf`")
         raise SystemExit(1)
@@ -54,18 +57,18 @@ if __name__ == "__main__":
     strategy: StandardStrategy | PyMuPDFStrategy | TripleColumnStrategy | None = None
 
     if args.strategy == "triplecolumn":
-        strategy = TripleColumnStrategy(args.input, 
+        strategy = TripleColumnStrategy(args.input,
                                         exclude_rationale=args.exclude_rationale,
                                         apply_corrections=args.apply_corrections)
 
     if args.strategy == "standard":
-        strategy = StandardStrategy(args.input, 
+        strategy = StandardStrategy(args.input,
                                     boxed_choices=args.boxedchoices,
                                     exclude_rationale=args.exclude_rationale,
                                     apply_corrections=args.apply_corrections)
 
     if args.strategy == "pymupdf":
-        strategy = PyMuPDFStrategy(args.input, 
+        strategy = PyMuPDFStrategy(args.input,
                                    exclude_rationale=args.exclude_rationale,
                                    apply_corrections=args.apply_corrections)
 

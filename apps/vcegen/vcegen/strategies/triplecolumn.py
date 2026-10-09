@@ -3,6 +3,9 @@ import re
 import json
 import os
 import wordninja
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TripleColumnStrategy:
 
@@ -95,7 +98,7 @@ class TripleColumnStrategy:
                         return None
 
                 return entry
-        
+
             # otherwise, first few characters before a '.' must be the number
             question_no, rest = row[0].split('.', 1)
             entry["question_number"] = question_no.strip()
@@ -122,7 +125,7 @@ class TripleColumnStrategy:
         if entry["question_number"] and entry["question_text"] and len(entry["choices"]) > 0:
             for choice in entry["choices"]:
                 found_exact_match = False
-                
+
                 if found_exact_match:
                     break
 
@@ -132,7 +135,7 @@ class TripleColumnStrategy:
                 for idx, cell in enumerate(row):
                     if cell is None:
                         continue
-                    
+
                     # disregard first letter from string to account for errors
                     if cell[1:].strip().lower() == choice:
                         found_exact_match = True
@@ -152,7 +155,7 @@ class TripleColumnStrategy:
 
         return entry
 
-    
+
     def __run_strategy(self, pdf: pdfplumber.pdf.PDF):
         rows = []
 
@@ -170,7 +173,7 @@ class TripleColumnStrategy:
                         del output["leftover"]
                         rows.append(output)
                         continue
-                    
+
                     if len(rows) > 0:
                         prev_row = rows[-1]
 
@@ -190,17 +193,17 @@ class TripleColumnStrategy:
                                 prev_row["answer"] = output["answer"]
 
                         rows[-1] = prev_row
-        
+
         self.result = rows
 
 
     def validate(self, min_choices=3, auto_filter=True):
-        print("\nValidating...\n")
+        logger.info("\nValidating...\n")
         invalid = []
         original_count = len(self.result) if self.result is not None else 0
 
         if self.result is None:
-            print("No results attached to instance")
+            logger.info("No results attached to instance")
             return
 
         for row in self.result:
@@ -208,25 +211,25 @@ class TripleColumnStrategy:
 
             if len(row["choices"]) < min_choices:
                 is_invalid = True
-            
+
             if row["answer"] is None or row["question_text"] is None:
                 is_invalid = True
-            
+
             if is_invalid:
                 invalid.append(row)
 
         if auto_filter:
             for entry in invalid:
                 self.result.remove(entry)
-        
-        print(f"Found {original_count} rows.")
-        print(f"Invalid Rows: {len(invalid)}/{original_count}")
-        print(f"Total Valid Rows: {len(self.result)}/{original_count}")
+
+        logger.info(f"Found {original_count} rows.")
+        logger.info(f"Invalid Rows: {len(invalid)}/{original_count}")
+        logger.info(f"Total Valid Rows: {len(self.result)}/{original_count}")
 
         if auto_filter:
-            print("The following invalid rows were trimmed out of the results:")
+            logger.info("The following invalid rows were trimmed out of the results:")
             for entry in invalid:
-                print(json.dumps(entry, indent=2))
+                logger.info(json.dumps(entry, indent=2))
 
         self.invalid = invalid
 
@@ -235,14 +238,14 @@ class TripleColumnStrategy:
         with pdfplumber.open(self.input_file) as pdf:
             self.__run_strategy(pdf)
 
-    
+
     def get_results(self, print_results=True):
         if print_results:
             if self.result is not None:
                 for q in self.result:
-                    print(json.dumps(q, indent=2))
+                    logger.info(json.dumps(q, indent=2))
             else:
-                print(f"No questions found")
+                logger.info(f"No questions found")
 
         return self.result
 
@@ -251,7 +254,7 @@ class TripleColumnStrategy:
         output_file_name = "output.txt"
 
         if self.result is None or len(self.result) == 0:
-            print("No questions found.")
+            logger.info("No questions found.")
             return
 
         if output_name is None:
@@ -282,6 +285,6 @@ class TripleColumnStrategy:
 
         file.close()
 
-        print(f"Exported results to {output_file_name}")
+        logger.info(f"Exported results to {output_file_name}")
 
 

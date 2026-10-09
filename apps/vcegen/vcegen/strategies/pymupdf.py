@@ -3,12 +3,16 @@ import wordninja
 import pandas as pd
 import json
 import os
+from io import BytesIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PyMuPDFStrategy:
 
-    def __init__(self, 
-                 input_file, 
-                 exclude_rationale=False, 
+    def __init__(self,
+                 input_file,
+                 exclude_rationale=False,
                  apply_corrections=False,
                  debug=False):
         self.input_file = input_file
@@ -77,7 +81,7 @@ class PyMuPDFStrategy:
                     "rationale": [self.__sanitize_text(rationales[idx])]
                 })
 
-            # if the cell value within the QUESTION column is `None`, 
+            # if the cell value within the QUESTION column is `None`,
             # it must be a choice/rationale row
             #
             # example: [None, None, ..., "Strings here", "string there"]
@@ -85,7 +89,7 @@ class PyMuPDFStrategy:
                 rows[-1]["choices"].append(self.__sanitize_text(choices[idx]))
                 rows[-1]["rationale"].append(self.__sanitize_text(rationales[idx]))
 
-            # increment pointer if the next entry is a string 
+            # increment pointer if the next entry is a string
             # (indicating the start of another question)
             if idx + 1 < len(question_no) and type(question_no[idx + 1]) is str:
                 array_idx_ptr += 1
@@ -105,7 +109,7 @@ class PyMuPDFStrategy:
                 continue
 
             input_df: pd.DataFrame | None = None
-            
+
             if page.number == 0:
                 if "question" not in [k.lower() for k in table_keys]:
                     continue
@@ -129,10 +133,10 @@ class PyMuPDFStrategy:
 
     def __run_strategy(self, document: pymupdf.Document):
         questions = []
-        
+
         for page_idx in range(document.page_count):
             if self.debug:
-                print(f"Scanning Page #{page_idx + 1}")
+                logger.info(f"Scanning Page #{page_idx + 1}")
 
             page = document[page_idx]
             questions = self.__scan_page(page, questions)
@@ -144,18 +148,18 @@ class PyMuPDFStrategy:
         self.__run_strategy(self.document)
 
         if self.result is not None:
-            print(f"Found {len(self.result)} questions")
+            logger.info(f"Found {len(self.result)} questions")
         else:
-            print("No questions found")
+            logger.info("No questions found")
 
 
     def get_results(self, print_results=True):
         if print_results:
             if self.result is not None:
                 for q in self.result:
-                    print(json.dumps(q, indent=2))
+                    logger.info(json.dumps(q, indent=2))
             else:
-                print(f"No questions found")
+                logger.info(f"No questions found")
 
         return self.result
 
@@ -164,7 +168,7 @@ class PyMuPDFStrategy:
         output_file_name = "output.txt"
 
         if self.result is None or len(self.result) == 0:
-            print("No questions found.")
+            logger.info("No questions found.")
             return
 
         if output_name is None:
@@ -195,4 +199,4 @@ class PyMuPDFStrategy:
 
         file.close()
 
-        print(f"Exported results to {output_file_name}")
+        logger.info(f"Exported results to {output_file_name}")
