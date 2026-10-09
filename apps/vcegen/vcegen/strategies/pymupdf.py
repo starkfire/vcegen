@@ -20,6 +20,12 @@ class PyMuPDFStrategy:
 
 
     def __create_document(self, input_file) -> pymupdf.Document:
+        if isinstance(input_file, BytesIO):
+            return pymupdf.open(stream=input_file.getvalue(), filetype="pdf")
+
+        if isinstance(input_file, (bytes, bytearray)):
+            return pymupdf.open(stream=input_file, filetype="pdf")
+
         return pymupdf.open(input_file)
 
 

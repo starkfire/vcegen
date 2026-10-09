@@ -1,34 +1,102 @@
-from fastapi import FastAPI, BackgroundTasks, Form, File, UploadFile
+from fastapi import FastAPI, Form, File, UploadFile
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 from contextlib import asynccontextmanager
 from vcegen.strategies import StandardStrategy, PyMuPDFStrategy, TripleColumnStrategy
 from io import BytesIO
 import asyncio
 import os
+import logging
+from typing import Literal
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    background_tasks = BackgroundTasks()
-    await background_tasks()
-    yield
+app = FastAPI()
 
-app = FastAPI(lifespan=lifespan)
-
-origins = [os.getenv("HOST_CLIENT")] if "HOST_CLIENT" in os.environ else [
-    "http://localhost", 
-    "http://localhost:1420", 
-    "http://localhost:5173", 
-    "http://localhost:8080"
+# CORS
+DEFAULT_ORIGINS = [
+    "http://localhost",
+    "http://localhost:1420",
+    "http://localhost:5173",
+    "http://localhost:8080",
+    # Tauri
+    "tauri://localhost",
+    "http://tauri.localhost",
+    "https://tauri.localhost"
 ]
+
+extra_origins = [origin.strip() for origin in os.getenv("HOST_CLIENT", "").split(",") if origin.strip()]
 
 app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=DEFAULT_ORIGINS + extra_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"]
 )
+
+# max allowed upload size (in MB)
+MAX_UPLOAD_BYTES = int(os.getenv("VCEGEN_MAX_UPLOAD_MB", "50")) * 1024 * 1024
+
+# PDF signature
+PDF_SIGNATURE = b"%PDF-"
+
+# Strategies
+Strategy = Literal["standard", "pymupdf", "triplecolumn"]
+
+def parse_pdf(
+    data: bytes,
+    strategy: Strategy,
+    exclude_rationale: bool,
+    boxed_choices: bool
+) -> dict:
+    """
+    Runs a parsing strategy on an in-memory PDF. Runs on a worker thread.
+    """
+    file_bytes = BytesIO(data)
+    parser: StandardStrategy | PyMuPDFStrategy | TripleColumnStrategy
+
+    if strategy == "triplecolumn":
+        parser = TripleColumnStrategy(file_bytes, exclude_rationale=exclude_rationale)
+    elif strategy == "pymupdf":
+        parser = PyMuPDFStrategy(file_bytes, exclude_rationale=exclude_rationale)
+    else:
+        parser = StandardStrategy(file_bytes,
+                                  boxed_choices=boxed_choices,
+                                  exclude_rationale=exclude_rationale)
+
+    parser.run()
+    invalid: list[dict] = []
+
+    if not isinstance(parser, PyMuPDFStrategy):
+        parser.validate()
+        invalid = parser.invalid if parser.invalid is not None else []
+
+    return {
+        "results": parser.get_results(print_results=False),
+        "invalid": invalid
+    }
+
+
+async def read_pdf_upload(file: UploadFile) -> bytes:
+    """
+    Read and validate an uploaded PDF
+    """
+    try:
+        if file.size is not None and file.size > MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="File is too large")
+
+        file_data = await file.read(MAX_UPLOAD_BYTES + 1)
+    finally:
+        await file.close()
+
+    if len(file_data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File is too large")
+
+    if PDF_SIGNATURE not in file_data[:1024]:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+
+    return file_data
+
 
 async def get_parser_results(parser: StandardStrategy | TripleColumnStrategy | PyMuPDFStrategy):
     while parser.get_results() is None:
@@ -43,59 +111,17 @@ async def root():
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...),
-                  strategy: str = Form(...),
+                  strategy: Strategy = Form(...),
                   exclude_rationale: bool = Form(default=False),
-                  boxed_choices: bool = Form(default=False),
-                  export: bool = Form(default=False)):
-
-    VALID_MIMETYPES = [
-        "application/pdf"
-    ]
-
-    if file.content_type not in VALID_MIMETYPES:
-        raise HTTPException(status_code=400, detail="Invalid File Type")
+                  boxed_choices: bool = Form(default=False)):
+    file_data = await read_pdf_upload(file)
 
     try:
-        # read file
-        file_data = await file.read()
-
-        # reset reader pointer
-        file.file.seek(0)
-
-        # convert to a BytesIO object
-        file_bytes = BytesIO(file_data)
-
-        parser: StandardStrategy | PyMuPDFStrategy | TripleColumnStrategy | None = None
-        
-        if strategy == "triplecolumn":
-            parser = TripleColumnStrategy(file, exclude_rationale=exclude_rationale)
-
-        if strategy == "standard":
-            parser = StandardStrategy(file_bytes, 
-                                      boxed_choices=boxed_choices,
-                                      exclude_rationale=exclude_rationale)
-
-        if strategy == "pymupdf":
-            parser = PyMuPDFStrategy(file, exclude_rationale=exclude_rationale)
-
-        if parser is None:
-            raise HTTPException(status_code=500, detail="Cannot determine parser for input strategy")
-
-        parser.run()
-        results = await get_parser_results(parser)
-        invalid: list[dict] = []
-
-        if not isinstance(parser, PyMuPDFStrategy):
-            parser.validate()
-            invalid = parser.invalid if parser.invalid is not None else []
-
-        if export:
-            parser.export()
-
-        return { 
-            "results": results,
-            "invalid": invalid
-        }
+        return await run_in_threadpool(parse_pdf,
+                                       file_data,
+                                       strategy,
+                                       exclude_rationale,
+                                       boxed_choices)
     except Exception as e:
         raise HTTPException(status_code=500, detail="An unknown error occurred")
     finally:
