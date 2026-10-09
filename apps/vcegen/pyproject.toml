@@ -1,0 +1,29 @@
+[project]
+name = "vcegen"
+version = "1.1.0"
+description = "Python library for generating VCE-ready files from PDFs"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "python-multipart==0.0.20",
+    "pdfplumber==0.11.4",
+    "pymupdf==1.25.0",
+    "pandas==2.2.3",
+    "wordninja==2.0.0",
+]
+
+[project.urls]
+Repository = "https://github.com/starkfire/vcegen"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+required-version = ">=0.9"
+
+[tool.uv.build-backend]
+module-name = "vcegen"
+module-root = ""

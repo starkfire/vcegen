@@ -166,6 +166,3 @@ demo/*.txt
 
 # Exported Outputs
 *.txt
-
-# Keep dependency manifest tracked
-!requirements.txt

@@ -9,24 +9,17 @@
     "lang:python"
   ],
   "targets": {
-    "venv": {
+    "install": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node ../../tools/scripts/create-venv.mjs",
+        "command": "uv sync",
         "cwd": "apps/vcegen"
       }
     },
-    "install": {
+    "lock": {
       "executor": "nx:run-commands",
-      "dependsOn": [
-        "venv"
-      ],
       "options": {
-        "commands": [
-          "node ../../tools/scripts/pip-install-requirements.mjs requirements.txt",
-          "node ../../tools/scripts/venv-python.mjs -m pip install --no-deps -e ."
-        ],
-        "parallel": false,
+        "command": "uv lock",
         "cwd": "apps/vcegen"
       }
     },
@@ -34,14 +27,14 @@
       "executor": "nx:run-commands",
       "continuous": true,
       "options": {
-        "command": "node ../../tools/scripts/venv-python.mjs -m uvicorn vcegen.restapi:app --reload --port 8000",
+        "command": "uv run uvicorn vcegen.restapi:app --reload --port 8000",
         "cwd": "apps/vcegen"
       }
     },
     "cli": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node ../../tools/scripts/venv-python.mjs vcegen.py",
+        "command": "uv run python vcegen.py",
         "cwd": "apps/vcegen",
         "forwardAllArgs": true
       }
