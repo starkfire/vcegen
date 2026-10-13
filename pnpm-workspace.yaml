@@ -1,8 +1,8 @@
 packages:
   - "apps/*"
 
-onlyBuiltDependencies:
-  - "@tailwindcss/oxide"
-  - "esbuild"
-  - "nx"
-  - "@parcel/watcher"
+allowBuilds:
+  "@parcel/watcher": true
+  "@tailwindcss/oxide": true
+  esbuild: true
+  nx: true
